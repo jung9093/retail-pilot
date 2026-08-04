@@ -1,0 +1,28 @@
+{
+  "name": "retail-copilot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Copilot for Retail — React + Tailwind frontend, Express backend, Groq AI, with CSV/PDF/image upload",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "install-all": "npm install",
+    "setup": "npm install",
+    "dev": "concurrently -n SERVER,CLIENT -c magenta,cyan \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
+    "start": "npm run dev",
+    "build": "npm run build --workspace client",
+    "vercel-build": "npm run build --workspace client"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

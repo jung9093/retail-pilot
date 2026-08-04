@@ -1,0 +1,129 @@
+=========================================================
+ RETAILPILOT — DEPLOY TO VERCEL (step-by-step)
+=========================================================
+
+This project is a monorepo: a React/Vite client + an Express API.
+It is already configured for Vercel via `vercel.json`:
+  - the client is built as a static site (client/dist)
+  - the Express API (api/index.js -> server/app.js) is deployed
+    as a single serverless function, mounted at /api/*
+
+You can deploy with the Vercel CLI (fastest) or via the Vercel
+dashboard + GitHub import. Both are covered below.
+
+---------------------------------------------------------
+OPTION A — Deploy with the Vercel CLI
+---------------------------------------------------------
+
+1. Install the CLI (one time):
+     npm i -g vercel
+
+2. From the project root (the folder with vercel.json in it):
+     vercel
+
+   - Log in / link when prompted.
+   - When asked "In which directory is your code located?" -> press
+     Enter to accept "./" (the root).
+   - When asked about build settings, you can accept the defaults —
+     vercel.json already defines the builds and routes.
+   - This creates a PREVIEW deployment and prints a URL.
+
+3. Add your environment variables (see "Environment Variables"
+   section below), either via the CLI or the dashboard.
+
+4. Deploy to production:
+     vercel --prod
+
+---------------------------------------------------------
+OPTION B — Deploy via the Vercel Dashboard (GitHub import)
+---------------------------------------------------------
+
+1. Push this project to a GitHub (or GitLab/Bitbucket) repository.
+
+2. Go to https://vercel.com/new and import that repository.
+
+3. Vercel will detect `vercel.json` and use it automatically.
+   Leave "Framework Preset" as "Other" — vercel.json controls
+   the build, so you do not need to set a build/output directory
+   in the dashboard UI.
+
+4. Before the first deploy (or right after), add the environment
+   variables below in:
+     Project -> Settings -> Environment Variables
+
+5. Click "Deploy". Vercel will build the client and deploy the
+   API function together.
+
+---------------------------------------------------------
+ENVIRONMENT VARIABLES (required)
+---------------------------------------------------------
+
+Add these in the Vercel dashboard (Project -> Settings ->
+Environment Variables), or via `vercel env add <NAME>` on the CLI.
+Set them for both "Production" and "Preview" environments.
+
+  GROQ_API_KEY     = gsk_your_real_key_here
+                     (get one free at https://console.groq.com/keys)
+
+  GROQ_MODEL       = llama-3.3-70b-versatile
+                     (optional — this is already the default)
+
+  GROQ_ENDPOINT    = https://api.groq.com/openai/v1/chat/completions
+                     (optional — this is already the default)
+
+NOTE: Do NOT commit your real GROQ_API_KEY to git. The local `.env`
+file is already listed in .gitignore. Only `.env.example` (with a
+placeholder value) should ever be committed.
+
+---------------------------------------------------------
+VERIFYING THE DEPLOYMENT
+---------------------------------------------------------
+
+Once deployed, check the health endpoint:
+
+  curl https://<your-deployment>.vercel.app/api/health
+
+You should see:
+  { "ok": true, "provider": "groq", "model": "llama-3.3-70b-versatile",
+    "tokenConfigured": true }
+
+If "tokenConfigured" is false, your GROQ_API_KEY environment
+variable is not set correctly for that environment — re-check
+Project -> Settings -> Environment Variables and redeploy.
+
+---------------------------------------------------------
+HOW THE ROUTING WORKS (for reference)
+---------------------------------------------------------
+
+vercel.json declares two builds:
+  1. client/package.json  -> @vercel/static-build
+       Runs `npm run build` inside client/ (Vite), publishes
+       client/dist as static files.
+  2. api/index.js         -> @vercel/node
+       Deploys the Express app (imported from server/app.js) as
+       a single serverless function.
+
+Routes:
+  /api/(.*)  -> api/index.js        (all API calls go to Express)
+  /(.*)      -> client/dist/$1      (everything else serves the SPA)
+
+No further configuration is needed — this mirrors the local dev
+setup where Vite proxies /api to the Express server on :8787.
+
+---------------------------------------------------------
+TROUBLESHOOTING
+---------------------------------------------------------
+
+- "GROQ_API_KEY missing" errors in the browser:
+    The env var isn't set for the environment you're hitting
+    (Production vs Preview use separate variable sets in Vercel).
+
+- Client loads but API calls 404:
+    Double check vercel.json wasn't overridden by dashboard build
+    settings — under Project -> Settings -> General, "Build & 
+    Development Settings" should be left on Vercel's auto-detected
+    values (don't manually set an Output Directory override).
+
+- Cold-start latency on first request:
+    Normal for serverless functions after inactivity. Groq's
+    inference itself is fast; the delay is the function spin-up.

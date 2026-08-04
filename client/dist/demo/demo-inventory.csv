@@ -1,0 +1,9 @@
+sku,name,on_hand,weekly_velocity,lead_time_days,unit_cost,supplier
+SKU-201,Merino Wool Sweater,14,22,20,24.00,WoolWorks
+SKU-202,Yoga Mat Pro,55,10,12,9.50,FlexFit
+SKU-203,Ceramic Mug Set,90,15,9,6.00,ClayCo
+SKU-204,Leather Wallet,7,11,25,14.00,HideCraft
+SKU-205,Bluetooth Earbuds,4,18,35,22.00,SoundLab
+SKU-206,Cotton Bath Towel,130,20,10,5.50,SoftWeave
+SKU-207,Scented Soy Candle,3,13,15,7.20,GlowJar
+SKU-208,Insulated Travel Mug,60,17,14,8.40,ThermoPro
